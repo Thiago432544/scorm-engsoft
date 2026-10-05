@@ -1,0 +1,7 @@
+# planilhas de origem têm dados pessoais de quem enviou as questões
+*.xlsx
+*.xls
+*.csv
+dist/
+*.zip
+__pycache__/

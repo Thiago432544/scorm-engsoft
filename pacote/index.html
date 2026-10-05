@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulado Engenharia de Software</title>
+<style>
+  :root {
+    --bg: #f6f4ef; --surface: #ffffff; --ink: #1d232b; --muted: #5d6673; --line: #e2ded4;
+    --accent: #2f5d8a; --accent-ink: #ffffff; --ok: #2e7d4f; --ok-bg: #e5f3ea; --bad: #b23a3a; --bad-bg: #f8e6e4;
+    --quote: #f1eee6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14171b; --surface: #1d2127; --ink: #e8e6e1; --muted: #9aa3ae; --line: #2e343c;
+      --accent: #7fb0e0; --accent-ink: #10161d; --ok: #6cc391; --ok-bg: #18301f; --bad: #ec8a8a; --bad-bg: #3a1d1d;
+      --quote: #252a31;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 1.6rem; line-height: 1.25; margin: 0 0 6px; }
+  .sub { color: var(--muted); margin: 0 0 28px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 24px; }
+  .card + .card { margin-top: 16px; }
+  fieldset { border: 0; padding: 0; margin: 0 0 22px; }
+  legend { font-weight: 600; margin-bottom: 10px; }
+  .opt { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line);
+    border-radius: 8px; margin-bottom: 8px; cursor: pointer; }
+  .opt:hover { border-color: var(--accent); }
+  .opt .n { margin-left: auto; color: var(--muted); font-size: .9rem; font-variant-numeric: tabular-nums; }
+  select { font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--ink); }
+  button { font: inherit; font-weight: 600; cursor: pointer; border-radius: 8px; padding: 12px 20px;
+    border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); }
+  button.ghost { background: transparent; color: var(--accent); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button:focus-visible, .opt:focus-within { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+    color: var(--muted); font-size: .9rem; margin-bottom: 8px; }
+  .bar { height: 6px; background: var(--line); border-radius: 99px; overflow: hidden; margin-bottom: 20px; }
+  .bar > div { height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+  .tag { display: inline-block; font-size: .8rem; color: var(--muted); border: 1px solid var(--line);
+    border-radius: 99px; padding: 2px 10px; margin-bottom: 14px; }
+  .q { font-size: 1.12rem; margin: 0 0 22px; white-space: pre-line; }
+  .answers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .answers button { padding: 16px; background: var(--surface); color: var(--ink); border-color: var(--line); }
+  .answers button:hover:not(:disabled) { border-color: var(--accent); }
+  .answers button.right { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+  .answers button.wrong { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); }
+  .answers button:disabled { opacity: 1; cursor: default; }
+  .fb { margin-top: 20px; border-radius: 8px; padding: 16px; }
+  .fb.ok { background: var(--ok-bg); } .fb.bad { background: var(--bad-bg); }
+  .fb strong { display: block; margin-bottom: 6px; }
+  .fb.ok strong { color: var(--ok); } .fb.bad strong { color: var(--bad); }
+  .just { white-space: pre-line; font-size: .95rem; background: var(--quote); border-radius: 6px;
+    padding: 12px 14px; margin-top: 10px; color: var(--ink); }
+  .next { margin-top: 20px; display: flex; justify-content: flex-end; }
+  .score { font-size: 3rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+  .verdict { font-weight: 600; margin: 8px 0 20px; }
+  .verdict.ok { color: var(--ok); } .verdict.bad { color: var(--bad); }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat { border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+  .stat b { display: block; font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+  .stat span { color: var(--muted); font-size: .85rem; }
+  details { border-top: 1px solid var(--line); padding: 12px 0; }
+  details summary { cursor: pointer; }
+  .mark { font-weight: 700; margin-right: 6px; }
+  .mark.ok { color: var(--ok); } .mark.bad { color: var(--bad); }
+  .lms { font-size: .8rem; color: var(--muted); margin-top: 24px; text-align: center; }
+  [hidden] { display: none !important; }
+  @media (max-width: 480px) { .answers { grid-template-columns: 1fr; } .card { padding: 18px; } }
+</style>
+</head>
+<body>
+<main>
+  <section id="start">
+    <h1>Simulado de Engenharia de Software</h1>
+    <p class="sub">Questões de verdadeiro ou falso baseadas em <em>Engenharia de Software Moderna</em> (Valente, 2020). Ao responder cada uma, você vê a justificativa com a citação do livro.</p>
+    <div class="card">
+      <fieldset>
+        <legend>Capítulos</legend>
+        <div id="topics"></div>
+      </fieldset>
+      <fieldset>
+        <legend><label for="qtd">Quantidade de questões</label></legend>
+        <select id="qtd"></select>
+      </fieldset>
+      <p class="sub" style="margin:0 0 18px">Para ser aprovado, acerte pelo menos <b id="mast">70</b>%. As questões são sorteadas a cada tentativa.</p>
+      <button id="go">Começar</button>
+    </div>
+  </section>
+
+  <section id="quiz" hidden>
+    <div class="top"><span id="pos"></span><span id="acc"></span></div>
+    <div class="bar"><div id="prog"></div></div>
+    <div class="card">
+      <span class="tag" id="qtopic"></span>
+      <p class="q" id="qtext"></p>
+      <div class="answers">
+        <button id="bT" data-v="1">Verdadeira</button>
+        <button id="bF" data-v="0">Falsa</button>
+      </div>
+      <div id="fb" class="fb" hidden></div>
+      <div class="next"><button id="next" hidden>Próxima</button></div>
+    </div>
+  </section>
+
+  <section id="end" hidden>
+    <h1>Resultado</h1>
+    <div class="card">
+      <div class="score" id="score"></div>
+      <p class="verdict" id="verdict"></p>
+      <div class="stats" id="stats"></div>
+      <div class="row">
+        <button id="again">Fazer outra tentativa</button>
+        <button id="review" class="ghost">Revisar respostas</button>
+      </div>
+    </div>
+    <div class="card" id="reviewList" hidden></div>
+  </section>
+
+  <p class="lms" id="lms"></p>
+</main>
+
+<script src="questoes.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // ---------- SCORM 1.2 ----------
+  var api = null, MASTERY = 70;
+  function findAPI(win) {
+    for (var i = 0; win && i < 10; i++) {
+      try { if (win.API) return win.API; } catch (e) {}
+      if (win.parent === win) break;
+      win = win.parent;
+    }
+    return null;
+  }
+  try { api = findAPI(window) || (window.opener && findAPI(window.opener)); } catch (e) { api = null; }
+  var lms = {
+    on: false,
+    init: function () {
+      if (!api) return;
+      this.on = String(api.LMSInitialize("")) === "true";
+      if (!this.on) return;
+      var m = parseFloat(api.LMSGetValue("cmi.student_data.mastery_score"));
+      if (!isNaN(m)) MASTERY = m;
+      var st = api.LMSGetValue("cmi.core.lesson_status");
+      if (st === "not attempted" || st === "") this.set("cmi.core.lesson_status", "incomplete");
+      this.commit();
+    },
+    get: function (k) { return this.on ? api.LMSGetValue(k) : ""; },
+    set: function (k, v) { if (this.on) api.LMSSetValue(k, String(v)); },
+    commit: function () { if (this.on) api.LMSCommit(""); },
+    finish: function () { if (this.on) { this.commit(); api.LMSFinish(""); this.on = false; } }
+  };
+  lms.init();
+  window.addEventListener("pagehide", function () { lms.finish(); });
+  window.addEventListener("beforeunload", function () { lms.finish(); });
+  document.getElementById("lms").textContent = lms.on
+    ? "Conectado ao LMS (SCORM 1.2). Seu resultado será registrado."
+    : "Modo independente: nenhum LMS detectado, o resultado não será registrado.";
+  document.getElementById("mast").textContent = MASTERY;
+
+  // ---------- Dados ----------
+  var ALL = window.QUESTOES || [];
+  var $ = function (id) { return document.getElementById(id); };
+  function shortTopic(t) { return t.replace(/\s*\(.*\)\s*$/, ""); }
+  function chapter(t) { var m = t.match(/Cap[ií]tulo\s*(\d+)/i); return m ? +m[1] : 99; }
+
+  var topics = {};
+  ALL.forEach(function (q) { topics[q.topico] = (topics[q.topico] || 0) + 1; });
+  var topicNames = Object.keys(topics).sort(function (a, b) { return chapter(a) - chapter(b); });
+  topicNames.forEach(function (t, i) {
+    var lab = document.createElement("label");
+    lab.className = "opt";
+    var cb = document.createElement("input");
+    cb.type = "checkbox"; cb.checked = true; cb.value = t; cb.id = "t" + i;
+    cb.addEventListener("change", fillQtd);
+    var name = document.createElement("span"); name.textContent = t;
+    var n = document.createElement("span"); n.className = "n"; n.textContent = topics[t] + (topics[t] === 1 ? " questão" : " questões");
+    lab.append(cb, name, n);
+    $("topics").appendChild(lab);
+  });
+
+  function pool() {
+    var sel = Array.prototype.map.call(document.querySelectorAll("#topics input:checked"), function (c) { return c.value; });
+    return ALL.filter(function (q) { return sel.indexOf(q.topico) >= 0; });
+  }
+  function fillQtd() {
+    var n = pool().length, prev = +$("qtd").value || 20, sel = $("qtd");
+    sel.innerHTML = "";
+    [10, 20, 30, 50].filter(function (k) { return k < n; }).concat(n ? [n] : []).forEach(function (k) {
+      var o = document.createElement("option");
+      o.value = k; o.textContent = k === n ? "Todas (" + n + ")" : k;
+      sel.appendChild(o);
+    });
+    var best = Array.prototype.find.call(sel.options, function (o) { return +o.value === prev; });
+    sel.value = best ? prev : (sel.options[0] ? sel.options[0].value : "");
+    $("go").disabled = n === 0;
+  }
+  fillQtd();
+
+  function shuffle(a) {
+    for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+
+  // ---------- Fluxo ----------
+  var run = null;
+  function show(id) { ["start", "quiz", "end"].forEach(function (s) { $(s).hidden = s !== id; }); window.scrollTo(0, 0); }
+
+  $("go").onclick = function () {
+    run = { qs: shuffle(pool().slice()).slice(0, +$("qtd").value), i: 0, answers: [] };
+    show("quiz"); render();
+  };
+
+  function render() {
+    var q = run.qs[run.i], n = run.qs.length;
+    var right = run.answers.filter(function (a) { return a.ok; }).length;
+    $("pos").textContent = "Questão " + (run.i + 1) + " de " + n;
+    $("acc").textContent = run.i ? right + " de " + run.i + " certas" : "";
+    $("prog").style.width = (run.i / n * 100) + "%";
+    $("qtopic").textContent = q.topico;
+    $("qtext").textContent = q.texto;
+    [$("bT"), $("bF")].forEach(function (b) { b.disabled = false; b.className = ""; });
+    $("fb").hidden = true; $("next").hidden = true;
+    $("bT").focus();
+  }
+
+  function answer(v) {
+    if ($("bT").disabled) return;
+    var q = run.qs[run.i], ok = v === q.resposta;
+    run.answers.push({ q: q, v: v, ok: ok });
+    $("bT").disabled = $("bF").disabled = true;
+    (q.resposta ? $("bT") : $("bF")).className = "right";
+    if (!ok) (v ? $("bT") : $("bF")).className = "wrong";
+    var fb = $("fb");
+    fb.className = "fb " + (ok ? "ok" : "bad");
+    fb.innerHTML = "";
+    var h = document.createElement("strong");
+    h.textContent = (ok ? "Correto. " : "Incorreto. ") + "A afirmação é " + (q.resposta ? "verdadeira." : "falsa.");
+    fb.appendChild(h);
+    if (q.justificativa) {
+      var j = document.createElement("div"); j.className = "just"; j.textContent = q.justificativa;
+      fb.appendChild(j);
+    }
+    fb.hidden = false;
+    $("next").textContent = run.i === run.qs.length - 1 ? "Ver resultado" : "Próxima";
+    $("next").hidden = false;
+    $("next").focus();
+  }
+  $("bT").onclick = function () { answer(true); };
+  $("bF").onclick = function () { answer(false); };
+  $("next").onclick = function () { run.i++; run.i < run.qs.length ? render() : finish(); };
+  document.addEventListener("keydown", function (e) {
+    if ($("quiz").hidden || e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key.toLowerCase();
+    if (k === "v") answer(true);
+    else if (k === "f") answer(false);
+  });
+
+  function finish() {
+    var n = run.answers.length, right = run.answers.filter(function (a) { return a.ok; }).length;
+    var pct = Math.round(right / n * 100), passed = pct >= MASTERY;
+    $("score").textContent = pct + "%";
+    $("verdict").textContent = passed ? "Aprovado. Você atingiu a nota mínima de " + MASTERY + "%." : "Abaixo da nota mínima de " + MASTERY + "%. Tente de novo.";
+    $("verdict").className = "verdict " + (passed ? "ok" : "bad");
+
+    var stats = $("stats"); stats.innerHTML = "";
+    function stat(v, l) { var d = document.createElement("div"); d.className = "stat"; var b = document.createElement("b"); b.textContent = v; var s = document.createElement("span"); s.textContent = l; d.append(b, s); stats.appendChild(d); }
+    stat(right + " / " + n, "acertos");
+    var by = {};
+    run.answers.forEach(function (a) { var t = shortTopic(a.q.topico); by[t] = by[t] || [0, 0]; by[t][1]++; if (a.ok) by[t][0]++; });
+    Object.keys(by).forEach(function (t) { stat(by[t][0] + " / " + by[t][1], t); });
+
+    $("reviewList").hidden = true;
+    show("end");
+    report(pct, passed);
+  }
+
+  function report(pct, passed) {
+    if (!lms.on) return;
+    var prev = parseFloat(lms.get("cmi.core.score.raw"));
+    if (isNaN(prev) || pct >= prev) {
+      lms.set("cmi.core.score.min", 0);
+      lms.set("cmi.core.score.max", 100);
+      lms.set("cmi.core.score.raw", pct);
+      lms.set("cmi.core.lesson_status", passed ? "passed" : "failed");
+    }
+    var base = parseInt(lms.get("cmi.interactions._count"), 10) || 0;
+    run.answers.forEach(function (a, i) {
+      var p = "cmi.interactions." + (base + i) + ".";
+      lms.set(p + "id", "q" + a.q.id);
+      lms.set(p + "type", "true-false");
+      lms.set(p + "correct_responses.0.pattern", a.q.resposta ? "t" : "f");
+      lms.set(p + "student_response", a.v ? "t" : "f");
+      lms.set(p + "result", a.ok ? "correct" : "wrong");
+    });
+    lms.commit();
+  }
+
+  $("again").onclick = function () { show("start"); };
+  $("review").onclick = function () {
+    var box = $("reviewList");
+    if (!box.hidden) { box.hidden = true; return; }
+    box.innerHTML = "";
+    run.answers.forEach(function (a, i) {
+      var d = document.createElement("details");
+      var s = document.createElement("summary");
+      var m = document.createElement("span"); m.className = "mark " + (a.ok ? "ok" : "bad"); m.textContent = a.ok ? "✓" : "✗";
+      s.append(m, document.createTextNode((i + 1) + ". " + a.q.texto.slice(0, 110) + (a.q.texto.length > 110 ? "…" : "")));
+      var full = document.createElement("p"); full.className = "q"; full.style.fontSize = "1rem"; full.textContent = a.q.texto;
+      var info = document.createElement("p");
+      info.textContent = "Sua resposta: " + (a.v ? "Verdadeira" : "Falsa") + " · Gabarito: " + (a.q.resposta ? "Verdadeira" : "Falsa");
+      d.append(s, full, info);
+      if (a.q.justificativa) { var j = document.createElement("div"); j.className = "just"; j.textContent = a.q.justificativa; d.appendChild(j); }
+      box.appendChild(d);
+    });
+    box.hidden = false;
+    box.scrollIntoView({ behavior: "smooth" });
+  };
+})();
+</script>
+</body>
+</html>
